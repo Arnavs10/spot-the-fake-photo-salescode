@@ -1,0 +1,6 @@
+data/
+Camera/
+Takenfromcamera/
+.venv/
+__pycache__/
+Screenshot*.png

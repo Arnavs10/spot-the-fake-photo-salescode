@@ -1,0 +1,9 @@
+numpy
+scipy
+scikit-learn
+pillow
+joblib
+# optional, only for the live camera demo (app.py):
+# flask
+# optional, only if you keep iPhone .HEIC files instead of converting to .jpg:
+# pillow-heif

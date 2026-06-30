@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Spot the Fake Photo — live demo</title>
+<style>
+  :root { --bg:#0e1116; --card:#161b22; --line:#30363d; --txt:#e6edf3;
+          --muted:#8b949e; --real:#2ea043; --screen:#f85149; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+         background:var(--bg); color:var(--txt); display:flex; min-height:100vh;
+         align-items:center; justify-content:center; padding:24px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:16px;
+          padding:24px; width:min(560px,100%); }
+  h1 { font-size:18px; margin:0 0 4px; font-weight:600; }
+  p.sub { margin:0 0 18px; color:var(--muted); font-size:13px; }
+  .videowrap { position:relative; border-radius:12px; overflow:hidden;
+               background:#000; aspect-ratio:4/3; }
+  video { width:100%; height:100%; object-fit:cover; display:block; }
+  .verdict { position:absolute; top:12px; left:12px; padding:6px 12px;
+             border-radius:999px; font-weight:600; font-size:13px;
+             background:rgba(0,0,0,.55); backdrop-filter:blur(4px); }
+  .meter { height:14px; border-radius:999px; margin:18px 0 6px;
+           background:linear-gradient(90deg,var(--real),#d29922,var(--screen)); position:relative; }
+  .needle { position:absolute; top:-5px; width:4px; height:24px; border-radius:2px;
+            background:#fff; box-shadow:0 0 0 2px #0008; transition:left .25s ease; left:0%; }
+  .scorerow { display:flex; justify-content:space-between; font-size:12px; color:var(--muted); }
+  .big { font-size:34px; font-weight:700; text-align:center; margin:10px 0 2px;
+         font-variant-numeric:tabular-nums; }
+  .biglabel { text-align:center; color:var(--muted); font-size:12px; margin-bottom:8px; }
+  button { width:100%; padding:11px; border-radius:10px; border:1px solid var(--line);
+           background:#21262d; color:var(--txt); font-size:14px; cursor:pointer; }
+  button:hover { background:#2b3138; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <h1>Spot the Fake Photo</h1>
+    <p class="sub">Live recapture detector. Point the camera at a real object, then at a screen showing a photo.</p>
+    <div class="videowrap">
+      <video id="vid" autoplay playsinline muted></video>
+      <div class="verdict" id="verdict">starting…</div>
+    </div>
+    <div class="big" id="score">—</div>
+    <div class="biglabel">screen-recapture probability</div>
+    <div class="meter"><div class="needle" id="needle"></div></div>
+    <div class="scorerow"><span>0 · real photo</span><span>photo of a screen · 1</span></div>
+    <canvas id="cv" width="512" height="384" style="display:none"></canvas>
+    <div style="height:14px"></div>
+    <button id="toggle">Pause</button>
+  </div>
+<script>
+const vid=document.getElementById('vid'), cv=document.getElementById('cv'),
+      ctx=cv.getContext('2d'), scoreEl=document.getElementById('score'),
+      needle=document.getElementById('needle'), verdict=document.getElementById('verdict'),
+      toggle=document.getElementById('toggle');
+let running=true, busy=false;
+
+navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}})
+  .then(s=>{ vid.srcObject=s; loop(); })
+  .catch(e=>{ verdict.textContent='camera blocked'; console.error(e); });
+
+async function tick(){
+  if(busy||!running||!vid.videoWidth) return;
+  busy=true;
+  ctx.drawImage(vid,0,0,cv.width,cv.height);
+  const dataURL=cv.toDataURL('image/jpeg',0.85);
+  try{
+    const r=await fetch('/predict',{method:'POST',headers:{'Content-Type':'application/json'},
+                                    body:JSON.stringify({image:dataURL})});
+    const {score}=await r.json();
+    render(score);
+  }catch(e){ verdict.textContent='error'; }
+  busy=false;
+}
+function render(s){
+  scoreEl.textContent=s.toFixed(2);
+  needle.style.left=(s*100)+'%';
+  const screen = s>0.5;
+  verdict.textContent = screen ? 'PHOTO OF A SCREEN' : 'REAL PHOTO';
+  verdict.style.color = screen ? 'var(--screen)' : 'var(--real)';
+}
+function loop(){ tick(); setTimeout(loop,1200); }
+toggle.onclick=()=>{ running=!running; toggle.textContent=running?'Pause':'Resume'; };
+</script>
+</body>
+</html>
