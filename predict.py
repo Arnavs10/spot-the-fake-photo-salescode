@@ -1,4 +1,4 @@
-"""Fill this in. That's the whole interface.
+"""We haveto fill this in. That's the whole interface.
 
 Usage:
     python predict.py some_image.jpg

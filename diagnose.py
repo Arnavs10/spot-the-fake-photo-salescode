@@ -1,6 +1,6 @@
 """
-diagnose.py -- run this locally to SEE whether moire is actually present in
-your photos. Saves fft_compare.png you can open and look at.
+diagnose.py - run this locally to SEE whether moire is actually present in
+my photos. Saves fft_compare.png I can open and look at.
 
   python diagnose.py data/real/IMG_2210.jpg data/screen/IMG_2309.jpg
 """

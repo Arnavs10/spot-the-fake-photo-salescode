@@ -4,8 +4,8 @@ features.py
 Handcrafted features for screen-recapture (photo-of-a-screen) detection.
 
 The core idea: a recaptured image carries *capture artifacts* that a real photo
-does not. The strongest, most physical one is MOIRE -- interference between the
-camera sensor grid and the display's pixel grid -- which shows up as periodic
+does not. The strongest, most physical one is MOIRE,  interference between the
+camera sensor grid and the display's pixel grid,  which shows up as periodic
 energy in the 2D FFT. We pair that with screen-door micro-texture (LBP), a
 double-capture sharpness drop, and small colour/gamut shifts.
 
